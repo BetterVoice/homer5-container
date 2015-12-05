@@ -1,0 +1,146 @@
+--
+-- Database: `homer_configuration`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alias`
+--
+
+CREATE TABLE "alias" (
+  id serial NOT NULL,
+  gid integer NOT NULL DEFAULT 0,
+  ip varchar(80) NOT NULL DEFAULT '',
+  port integer NOT NULL DEFAULT '0',
+  capture_id varchar(100) NOT NULL DEFAULT '',
+  alias varchar(100) NOT NULL DEFAULT '',
+  status smallint NOT NULL DEFAULT 0,
+  created timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE (id),
+  UNIQUE (ip,port,capture_id)
+);
+CREATE INDEX ON alias (ip);
+
+CREATE OR REPLACE FUNCTION update_timestamp_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.timestamp = now(); 
+   RETURN NEW;
+END;
+$$ language 'plpgsql';
+ 
+CREATE TRIGGER update_timestamp_modtime BEFORE UPDATE
+ON alias FOR EACH ROW EXECUTE PROCEDURE
+update_timestamp_column();
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `group`
+--
+
+CREATE TABLE "group" (
+  gid integer NOT NULL DEFAULT 0,
+  name varchar(100) NOT NULL DEFAULT '',
+  UNIQUE (gid)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `link_share`
+--
+
+CREATE TABLE "link_share" (
+  id serial NOT NULL,
+  uid integer NOT NULL DEFAULT 0,
+  uuid varchar(120) NOT NULL DEFAULT '',
+  data text NOT NULL,
+  expire timestamp NOT NULL DEFAULT '2032-12-31 00:00:00',
+  active smallint NOT NULL DEFAULT '1',
+  PRIMARY KEY (id)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `node`
+--
+
+CREATE TABLE "node" (
+  id serial NOT NULL,
+  host varchar(80) NOT NULL DEFAULT '',
+  dbname varchar(100) NOT NULL DEFAULT '',
+  dbport varchar(100) NOT NULL DEFAULT '',
+  dbusername varchar(100) NOT NULL DEFAULT '',
+  dbpassword varchar(100) NOT NULL DEFAULT '',
+  dbtables varchar(100) NOT NULL DEFAULT 'sip_capture',
+  name varchar(100) NOT NULL DEFAULT '',
+  status smallint NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  UNIQUE (id),
+  UNIQUE (host)
+);
+CREATE INDEX ON node (host);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `setting`
+--
+
+CREATE TABLE "setting" (
+  id serial NOT NULL,
+  uid integer NOT NULL DEFAULT '0',
+  param_name varchar(120) NOT NULL DEFAULT '',
+  param_value text NOT NULL,
+  valid_param_from timestamp NOT NULL DEFAULT '2012-01-01 00:00:00',
+  valid_param_to timestamp NOT NULL DEFAULT '2032-12-01 00:00:00',
+  param_prio integer NOT NULL DEFAULT '10',
+  active integer NOT NULL DEFAULT '1',
+  PRIMARY KEY (id),
+  UNIQUE (uid,param_name)
+);
+CREATE INDEX ON setting (param_name);
+CREATE INDEX ON setting (uid);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user`
+--
+
+CREATE TABLE "user" (
+  uid serial NOT NULL,
+  gid integer NOT NULL DEFAULT '10',
+  grp varchar(200) NOT NULL DEFAULT '',
+  username varchar(50) NOT NULL DEFAULT '',
+  password varchar(100) NOT NULL DEFAULT '',
+  firstname varchar(250) NOT NULL DEFAULT '',
+  lastname varchar(250) NOT NULL DEFAULT '',
+  email varchar(250) NOT NULL DEFAULT '',
+  department varchar(100) NOT NULL DEFAULT '',
+  regdate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  lastvisit timestamp NOT NULL,
+  active smallint NOT NULL DEFAULT '1',
+  PRIMARY KEY (uid),
+  UNIQUE (username)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_menu`
+--
+
+CREATE TABLE "user_menu" (
+  id varchar(125) NOT NULL DEFAULT '',
+  name varchar(100) NOT NULL DEFAULT '',
+  alias varchar(200) NOT NULL DEFAULT '',
+  icon varchar(100) NOT NULL DEFAULT '',
+  weight integer NOT NULL DEFAULT '10',
+  active integer NOT NULL DEFAULT '1',
+  UNIQUE (id)
+);

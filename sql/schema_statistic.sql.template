@@ -1,0 +1,200 @@
+--
+-- Database: `homer_statistic`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alarm_config`
+--
+
+CREATE TABLE "alarm_config" (
+  id serial NOT NULL,
+  name varchar(200) NOT NULL DEFAULT '',
+  startdate timestamp NOT NULL,
+  stopdate timestamp NOT NULL,
+  type varchar(50) NOT NULL DEFAULT '',
+  value integer NOT NULL DEFAULT 0,
+  notify smallint NOT NULL DEFAULT '1',
+  email varchar(200) NOT NULL DEFAULT '',
+  createdate timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  active integer NOT NULL DEFAULT '1',
+  PRIMARY KEY (id),
+  UNIQUE (type)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alarm_data`
+--
+
+CREATE TABLE "alarm_data" (
+  id bigserial NOT NULL,
+  create_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  type varchar(50) NOT NULL DEFAULT '',
+  total integer NOT NULL DEFAULT 0,
+  source_ip varchar(150) NOT NULL DEFAULT '0.0.0.0',
+  description varchar(256) NOT NULL DEFAULT '',
+  status integer NOT NULL DEFAULT '1',
+  PRIMARY KEY (id,create_date)
+);
+CREATE INDEX ON alarm_data (create_date);
+CREATE INDEX ON alarm_data (type);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `alarm_data_mem`
+--
+
+CREATE TABLE "alarm_data_mem" (
+  id bigserial NOT NULL,
+  create_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  type varchar(50) NOT NULL DEFAULT '',
+  total integer NOT NULL DEFAULT 0,
+  source_ip varchar(150) NOT NULL DEFAULT '0.0.0.0',
+  description varchar(256) NOT NULL DEFAULT '',
+  status integer NOT NULL DEFAULT '1',
+  PRIMARY KEY (id),
+  UNIQUE (type,source_ip)
+);
+CREATE INDEX ON alarm_data_mem (create_date);
+CREATE INDEX ON alarm_data_mem (type);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stats_data`
+--
+
+CREATE TABLE "stats_data" (
+  id bigserial NOT NULL,
+  from_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  to_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  type varchar(50) NOT NULL DEFAULT '',
+  total integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (id,from_date),
+  UNIQUE (from_date,to_date,type)
+);
+CREATE INDEX ON stats_data (from_date);
+CREATE INDEX ON stats_data (to_date);
+CREATE INDEX ON stats_data (type);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stats_ip`
+--
+
+CREATE TABLE "stats_ip" (
+  id bigserial NOT NULL,
+  from_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  to_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  method varchar(50) NOT NULL DEFAULT '',
+  source_ip varchar(255) NOT NULL DEFAULT '0.0.0.0',
+  total integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (id,from_date),
+  UNIQUE (from_date,to_date,method,source_ip)
+);
+CREATE INDEX ON stats_ip (from_date);
+CREATE INDEX ON stats_ip (to_date);
+CREATE INDEX ON stats_ip (method);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stats_ip_mem`
+--
+
+CREATE TABLE "stats_ip_mem" (
+  id bigserial NOT NULL,
+  create_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  method varchar(50) NOT NULL DEFAULT '',
+  source_ip varchar(255) NOT NULL DEFAULT '0.0.0.0',
+  total integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  UNIQUE (method,source_ip)
+);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stats_method`
+--
+
+CREATE TABLE "stats_method" (
+  id bigserial NOT NULL,
+  from_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  to_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  method varchar(50) NOT NULL DEFAULT '',
+  auth smallint NOT NULL DEFAULT '0',
+  cseq varchar(100) NOT NULL DEFAULT '',
+  totag smallint NOT NULL DEFAULT 0,
+  total integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (id,from_date),
+  UNIQUE (from_date,to_date,method,auth,totag,cseq)
+);
+CREATE INDEX ON stats_method (from_date);
+CREATE INDEX ON stats_method (to_date);
+CREATE INDEX ON stats_method (method);
+CREATE INDEX ON stats_method (cseq);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stats_method_mem`
+--
+
+CREATE TABLE "stats_method_mem" (
+  id bigserial NOT NULL,
+  create_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  method varchar(50) NOT NULL DEFAULT '',
+  auth smallint NOT NULL DEFAULT '0',
+  cseq varchar(100) NOT NULL DEFAULT '',
+  totag smallint NOT NULL DEFAULT 0,
+  total integer NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  UNIQUE (method,auth,totag,cseq)
+);
+CREATE INDEX ON stats_method_mem (create_date);
+CREATE INDEX ON stats_method_mem (method);
+CREATE INDEX ON stats_method_mem (cseq);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stats_useragent`
+--
+
+CREATE TABLE "stats_useragent" (
+  id bigserial NOT NULL,
+  from_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  to_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  useragent varchar(100) NOT NULL DEFAULT '',
+  method varchar(50) NOT NULL DEFAULT '',
+  total integer NOT NULL DEFAULT '0',
+  PRIMARY KEY (id,from_date),
+  UNIQUE (from_date,to_date,method,useragent)
+);
+CREATE INDEX ON stats_useragent (from_date);
+CREATE INDEX ON stats_useragent (to_date);
+CREATE INDEX ON stats_useragent (useragent);
+CREATE INDEX ON stats_useragent (method);
+CREATE INDEX ON stats_useragent (total);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `stats_useragent_mem`
+--
+
+CREATE TABLE "stats_useragent_mem" (
+  id bigserial NOT NULL,
+  create_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  useragent varchar(100) NOT NULL DEFAULT '',
+  method varchar(50) NOT NULL DEFAULT '',
+  total integer NOT NULL DEFAULT '0',
+  PRIMARY KEY (id),
+  UNIQUE (useragent,method)
+);

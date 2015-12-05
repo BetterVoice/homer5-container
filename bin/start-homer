@@ -1,0 +1,131 @@
+#!/usr/bin/python
+
+from jinja2 import Environment, FileSystemLoader
+from subprocess import check_call, Popen
+
+import os
+
+def get_configuration():
+  configuration = { }
+  # Get the initialization flag.
+  value = os.getenv('HOMER_INIT', 'True')
+  configuration.update({ 'homer_init': value == 'True' })
+  # Get the homer user name.
+  value = os.getenv('HOMER_USER', 'homer')
+  configuration.update({ 'homer_user': value })
+  # Get the homer user password.
+  value = os.getenv('HOMER_PASSWORD', 'bettervoice')
+  configuration.update({ 'homer_password': value })
+  # Get the homer hostname.
+  value = os.getenv('HOMER_HOSTNAME', 'localhost')
+  configuration.update({ 'homer_hostname': value })
+  # Get the alarm from email.
+  value = os.getenv('HOMER_ALARM_FROM', 'homer@company.com')
+  configuration.update({ 'alarm_from_email': value })
+  # Get the alarm to email.
+  value = os.getenv('HOMER_ALARM_TO', 'admin@company.com')
+  configuration.update({ 'alarm_to_email': value })
+  # Get the homer db host.
+  value = os.getenv('HOMER_DB_HOST', '127.0.0.1')
+  configuration.update({ 'homer_db_host': value })
+  # Get the homer db port.
+  value = os.getenv('HOMER_DB_PORT', '5432')
+  configuration.update({ 'homer_db_port': value })
+  # Get the homer db admin user.
+  value = os.getenv('HOMER_DB_ADMIN', 'postgres')
+  configuration.update({ 'homer_db_admin': value })
+  # Get the homer db admin password.
+  value = os.getenv('HOMER_DB_ADMIN_PASSWORD', 'bettervoice')
+  configuration.update({ 'homer_db_admin_password': value })
+  return configuration
+
+def psql_exec(user, password, host, port, file, database = None):
+  args = ['-h', host, '-p', port, '-U', user]
+  if database is not None:
+    args.extend(['-d', database])
+  args.extend(['-w', '-f', file])
+  run('psql', *args, env = {
+    'PGPASSWORD': password
+  })
+
+def run(app, *args, **kwargs):
+  if kwargs.get('env') is None:
+    proc = Popen([app] + list(args))
+  else:
+    proc = Popen([app] + list(args), env = kwargs.get('env'))
+  proc.wait()
+
+def start(service):
+  check_call(['service', service, 'start'])
+
+def write(template, path):
+  with open(path, "wb") as output:
+    output.write(template)
+
+if __name__ == "__main__":
+  # Initialize Jinja2
+  loader = FileSystemLoader('/usr/share/homer5')
+  templates = Environment(loader = loader)
+  # Load the configuration into a dictionary.
+  configuration = get_configuration()
+  if configuration['homer_init']:
+    # Create the user and databases.
+    host = configuration['homer_db_host']
+    port = configuration['homer_db_port']
+    user = configuration['homer_db_admin']
+    password = configuration['homer_db_admin_password']
+    sql = templates.get_template('sql/homer_databases.sql.template') \
+                   .render(configuration)
+    write(sql, '/usr/share/homer5/sql/homer_databases.sql')
+    psql_exec(user, password, host, port, '/usr/share/homer5/sql/homer_databases.sql')
+    sql = templates.get_template('sql/homer_user.sql.template') \
+                   .render(configuration)
+    write(sql, '/usr/share/homer5/sql/homer_user.sql')
+    psql_exec(user, password, host, port, '/usr/share/homer5/sql/homer_user.sql')
+    # Create the schema.
+    user = configuration['homer_user']
+    password = configuration['homer_password']
+    sql = templates.get_template('sql/schema_configuration.sql.template') \
+                   .render(configuration)
+    write(sql, '/usr/share/homer5/sql/schema_configuration.sql')
+    psql_exec(user, password, host, port, '/usr/share/homer5/sql/schema_configuration.sql',
+              database = 'homer_configuration')
+    sql = templates.get_template('sql/schema_data.sql.template') \
+                   .render(configuration)
+    write(sql, '/usr/share/homer5/sql/schema_data.sql')
+    psql_exec(user, password, host, port, '/usr/share/homer5/sql/schema_data.sql',
+              database = 'homer_data')
+    sql = templates.get_template('sql/schema_statistic.sql.template') \
+                   .render(configuration)
+    write(sql, '/usr/share/homer5/sql/schema_statistic.sql')
+    psql_exec(user, password, host, port, '/usr/share/homer5/sql/schema_statistic.sql',
+              database = 'homer_statistic')
+    # Configure homer.
+    loader = FileSystemLoader('/usr/share/nginx/html/api')
+    templates = Environment(loader = loader)
+    conf = templates.get_template('configuration.php.template') \
+                    .render(configuration)
+    write(conf, '/usr/share/nginx/html/api/configuration.php')
+    pref = templates.get_template('preferences.php.template') \
+                    .render(configuration)
+    write(pref, '/usr/share/nginx/html/api/preferences.php')
+    # Configure kamailio.
+    loader = FileSystemLoader('/usr/local/etc/kamailio')
+    templates = Environment(loader = loader)
+    init = templates.get_template('kamailio.cfg.template') \
+                    .render(configuration)
+    write(init, '/usr/local/etc/kamailio/kamailio.cfg')
+    # Configure nginx
+    loader = FileSystemLoader('/etc/nginx/sites-available')
+    templates = Environment(loader = loader)
+    init = templates.get_template('default-php.template') \
+                    .render(configuration)
+    write(init, '/etc/nginx/sites-available/default')
+  start('kamailio')
+  start('php5-fpm')
+  start('nginx')
+  # Print the log to stdout.
+  try:
+    run('tail', '-F', '/var/log/nginx/error.log')
+  except KeyboardInterrupt:
+    print 'Exiting...'
