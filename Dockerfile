@@ -24,7 +24,7 @@ RUN git submodule update
 RUN cp -R homer-ui/* /usr/share/nginx/html/
 RUN cp -R homer-api/api /usr/share/nginx/html/
 RUN chmod -R 0775 /usr/share/nginx/html/store/dashboard
-RUN wget https://raw.githubusercontent.com/sipcapture/homer-ui/master/lib/sweetalert/SweetAlert-base.min.js -O /usr/share/nginx/html/api/lib/sweetalert/SweetAlert-base.min.js
+RUN wget https://raw.githubusercontent.com/sipcapture/homer-ui/master/lib/sweetalert/SweetAlert-base.min.js -O /usr/share/nginx/html/lib/sweetalert/SweetAlert-base.min.js
 ADD conf/default-php.template /etc/nginx/sites-available/default-php.template
 
 ADD conf/configuration.php.template /usr/share/nginx/html/api/configuration.php.template
