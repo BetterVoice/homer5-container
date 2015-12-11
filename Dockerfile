@@ -4,7 +4,7 @@ FROM ubuntu:14.04
 MAINTAINER Thomas Quintana <thomas@bettervoice.com>
 
 # Install Dependencies
-RUN apt-get update && apt-get install -y bison ca-certificates cron flex git-core libcurl4-openssl-dev libclass-dbi-mysql-perl libclass-dbi-pg-perl libdbi-perl libmysqlclient-dev libpcre3-dev libpq-dev libssl-dev libxml2-dev nginx perl php5 php5-cli php5-dev php5-fpm php5-gd php5-json php5-mysql php-pear php5-pgsql php-services-json postgresql-client python python-dev
+RUN apt-get update && apt-get install -y bison ca-certificates cron flex git-core libcurl4-openssl-dev libclass-dbi-mysql-perl libclass-dbi-pg-perl libdbi-perl libmysqlclient-dev libpcre3-dev libpq-dev libssl-dev libxml2-dev nginx perl php5 php5-cli php5-dev php5-fpm php5-gd php5-json php5-mysql php-pear php5-pgsql php-services-json postgresql-client python python-dev wget
 
 # Update PIP
 ADD bin/get-pip.py /usr/local/bin/get-pip.py
@@ -24,6 +24,7 @@ RUN git submodule update
 RUN cp -R homer-ui/* /usr/share/nginx/html/
 RUN cp -R homer-api/api /usr/share/nginx/html/
 RUN chmod -R 0775 /usr/share/nginx/html/store/dashboard
+RUN wget https://raw.githubusercontent.com/sipcapture/homer-ui/master/lib/sweetalert/SweetAlert-base.min.js -O /usr/share/nginx/html/api/lib/sweetalert/SweetAlert-base.min.js
 ADD conf/default-php.template /etc/nginx/sites-available/default-php.template
 
 ADD conf/configuration.php.template /usr/share/nginx/html/api/configuration.php.template
@@ -59,5 +60,5 @@ WORKDIR /root
 EXPOSE 80/tcp
 EXPOSE 9060/udp
 
-# Start PostgreSQL.
+# Start Homer.
 CMD start-homer

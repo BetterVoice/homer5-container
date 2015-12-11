@@ -35,6 +35,11 @@ CREATE TRIGGER update_timestamp_modtime BEFORE UPDATE
 ON alias FOR EACH ROW EXECUTE PROCEDURE
 update_timestamp_column();
 
+INSERT INTO alias (id, gid, ip, port, capture_id, alias, status, created) VALUES
+(1, 10, '192.168.0.30', 0, 'homer01', 'proxy01', 1, '2014-06-12 20:36:50'),
+(2, 10, '192.168.0.4', 0, 'homer01', 'acme-234', 1, '2014-06-12 20:37:01'),
+(22, 10, '127.0.0.1:5060', 0, 'homer01', 'sip.local.net', 1, '2014-06-12 20:37:01');
+
 -- --------------------------------------------------------
 
 --
@@ -46,6 +51,8 @@ CREATE TABLE "group" (
   name varchar(100) NOT NULL DEFAULT '',
   UNIQUE (gid)
 );
+
+INSERT INTO group (gid, name) VALUES (10, 'Administrator');
 
 -- --------------------------------------------------------
 
@@ -85,6 +92,10 @@ CREATE TABLE "node" (
 );
 CREATE INDEX ON node (host);
 
+INSERT INTO node (id, host, dbname, dbport, dbusername, dbpassword, dbtables, name, status) VALUES
+(1, '127.0.0.1', 'homer_data', '3306', 'homer_user', 'mysql_password', 'sip_capture', 'homer01', 1),
+(21, '10.1.0.7', 'homer_data', '3306', 'homer_user', 'mysql_password', 'sip_capture', 'external', 1);
+
 -- --------------------------------------------------------
 
 --
@@ -105,6 +116,9 @@ CREATE TABLE "setting" (
 );
 CREATE INDEX ON setting (param_name);
 CREATE INDEX ON setting (uid);
+
+INSERT INTO setting (id, uid, param_name, param_value, valid_param_from, valid_param_to, param_prio, active) VALUES
+(1, 1, 'timerange', '{"from":"2015-05-26T18:34:42.654Z","to":"2015-05-26T18:44:42.654Z"}', '2012-01-01 00:00:00', '2032-12-01 00:00:00', 10, 1);
 
 -- --------------------------------------------------------
 
@@ -128,6 +142,10 @@ CREATE TABLE "user" (
   PRIMARY KEY (uid),
   UNIQUE (username)
 );
+
+INSERT INTO user (uid, gid, grp, username, password, firstname, lastname, email, department, regdate, lastvisit, active) VALUES
+(1, 10, 'users,admins', 'admin', 'test123', 'Admin', 'Admin', 'admin@test.com', 'Voice Enginering', '2012-01-19 00:00:00', '2015-05-29 07:17:35', 1),
+(2, 10, 'users', 'noc', '123test', 'NOC', 'NOC', 'noc@test.com', 'Voice NOC', '2012-01-19 00:00:00', '2015-05-29 07:17:35', 1);
 
 -- --------------------------------------------------------
 
