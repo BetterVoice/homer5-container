@@ -69,7 +69,7 @@ server {
 		fastcgi_pass unix:/var/run/php5-fpm.sock;
 		fastcgi_intercept_errors on;
 		fastcgi_param  SCRIPT_FILENAME $document_root/api/index.php;
-  }
+  	}
 
 	# deny access to .htaccess files, if Apache's document root
 	# concurs with nginx's one
